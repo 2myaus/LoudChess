@@ -327,6 +327,68 @@
 )
 
 
+; get-bishop-moves-from-square: chess-position chess-square -> (list chess-move)
+; Returns the chess-moves which the bishop at the given square can move to
+; Assumes that the piece is a bishop and the correct color to play
+
+(define (get-bishop-moves-from-square position from-square)
+  (let [(from-row (chess-square-row from-square))
+        (from-col (chess-square-col from-square))
+        (board (chess-position-board position))
+        (occupant (get-board-occupant (chess-position-board position) from-square))
+        (to-play (chess-position-to-play position))]
+    (define (get-squares-along at-square step-rows step-cols)
+      (cond
+        [(not (square-in-bounds at-square)) null] ; We are at the edge of the board
+        [(null? (get-board-occupant at-square)) (cons at-square (get-squares-along (offset-square at-square step-rows step-cols)))] ; The square is not occupied
+        [(equal? (chesspiece-color (get-board-occupant at-square)) to-play) null] ; The square is occupied by a piece of our color
+        [else (list at-square)] ; The square is occupied by a piece of the other color
+      )
+    )
+
+    (append
+      (get-squares-along (offset-square from-square 1 1) 1 1)
+      (get-squares-along (offset-square from-square -1 1) -1 1)
+      (get-squares-along (offset-square from-square 1 -1) 1 -1)
+      (get-squares-along (offset-square from-square -1 -1) -1 -1)) ))
+
+
+; get-rook-moves-from-square: chess-position chess-square -> (list chess-move)
+; Returns the chess-moves which the rook at the given square can move to
+; Assumes that the piece is a rook and the correct color to play
+
+(define (get-rook-moves-from-square position from-square)
+  (let [(from-row (chess-square-row from-square))
+        (from-col (chess-square-col from-square))
+        (board (chess-position-board position))
+        (occupant (get-board-occupant (chess-position-board position) from-square))
+        (to-play (chess-position-to-play position))]
+    (define (get-squares-along at-square step-rows step-cols)
+      (cond
+        [(not (square-in-bounds at-square)) null] ; We are at the edge of the board
+        [(null? (get-board-occupant at-square)) (cons at-square (get-squares-along (offset-square at-square step-rows step-cols)))] ; The square is not occupied
+        [(equal? (chesspiece-color (get-board-occupant at-square)) to-play) null] ; The square is occupied by a piece of our color
+        [else (list at-square)] ; The square is occupied by a piece of the other color
+      )
+    )
+
+    (append
+      (get-squares-along (offset-square from-square 1 0) 1 0)
+      (get-squares-along (offset-square from-square -1 0) -1 0)
+      (get-squares-along (offset-square from-square 0 -1) 0 -1)
+      (get-squares-along (offset-square from-square 0 1) 0 1)) ))
+
+
+; get-queen-moves-from-square: chess-position chess-square -> (list chess-move)
+; Returns the chess-moves which the queen at the given square can move to
+; Assumes that the piece is a queen and the correct color to play
+
+(define (get-rook-moves-from-square position from-square)
+  (append
+    (get-bishop-moves-from-square position from-square)
+    (get-rook-moves-from-square position from-square))
+
+
 ; get-moves-from-square: chess-position chess-square -> (list chess-move)
 ; Returns the chess-moves which the piece at the given square can move to
 
