@@ -157,7 +157,7 @@
         (board (chess-position-board position))
         (to-play (chess-position-to-play position))
         (occupant (get-board-occupant (chess-position-board position) from-square))]
-    (if (equal? (chesspiece-color occupant) 'White)
+    (if (equal? to-play 'White)
       ; White Pawn
       (let [(capture-L (offset-square from-square 1 1))
             (capture-R (offset-square from-square 1 -1)) 
@@ -188,16 +188,30 @@
           (append ; Captures
             (if (and
                   (square-in-bounds capture-L)
-                  (not (null? get-board-occupant board capture-L))
-                  (not (equal? (chesspiece-color (get-board-occupant board capture-L)) 'White)))
-              (list (make-chess-move from-square capture-L))
+                  (not (null? (get-board-occupant board capture-L)))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-L)) to-play)))
+              (if (= (chess-square-row capture-L) 7) ; Promotion Capture
+                (list
+                  (make-chess-move from-square capture-L 'Knight)
+                  (make-chess-move from-square capture-L 'Bishop)
+                  (make-chess-move from-square capture-L 'Rook)
+                  (make-chess-move from-square capture-L 'Queen))
+                (list (make-chess-move from-square capture-L null))
+              )
               null
             )
             (if (and
                   (square-in-bounds capture-R)
-                  (not (null? get-board-occupant board capture-R))
-                  (not (equal? (chesspiece-color (get-board-occupant board capture-R)) 'White)))
-              (list (make-chess-move from-square capture-R))
+                  (not (null? (get-board-occupant board capture-R)))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-R)) to-play)))
+              (if (= (chess-square-row capture-R) 7) ; Promotion Capture
+                (list
+                  (make-chess-move from-square capture-R 'Knight)
+                  (make-chess-move from-square capture-R 'Bishop)
+                  (make-chess-move from-square capture-R 'Rook)
+                  (make-chess-move from-square capture-R 'Queen))
+                (list (make-chess-move from-square capture-R null))
+              )
               null
             )
           )
@@ -234,16 +248,30 @@
           (append ; Captures
             (if (and
                   (square-in-bounds capture-L)
-                  (not (null? get-board-occupant board capture-L))
-                  (not (equal? (chesspiece-color (get-board-occupant board capture-L)) 'Black)))
-              (list (make-chess-move from-square capture-L))
+                  (not (null? (get-board-occupant board capture-L)))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-L)) to-play)))
+              (if (= (chess-square-row capture-L) 0) ; Promotion Capture
+                (list
+                  (make-chess-move from-square capture-L 'Knight)
+                  (make-chess-move from-square capture-L 'Bishop)
+                  (make-chess-move from-square capture-L 'Rook)
+                  (make-chess-move from-square capture-L 'Queen))
+                (list (make-chess-move from-square capture-L null))
+              )
               null
             )
             (if (and
                   (square-in-bounds capture-R)
-                  (not (null? get-board-occupant board capture-R))
-                  (not (equal? (chesspiece-color (get-board-occupant board capture-R)) 'Black)))
-              (list (make-chess-move from-square capture-R))
+                  (not (null? (get-board-occupant board capture-R)))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-R)) to-play)))
+              (if (= (chess-square-row capture-R) 0) ; Promotion Capture
+                (list
+                  (make-chess-move from-square capture-R 'Knight)
+                  (make-chess-move from-square capture-R 'Bishop)
+                  (make-chess-move from-square capture-R 'Rook)
+                  (make-chess-move from-square capture-R 'Queen))
+                (list (make-chess-move from-square capture-R null))
+              )
               null
             )
           )
