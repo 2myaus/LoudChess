@@ -189,17 +189,17 @@
             (if (and
                   (square-in-bounds capture-L)
                   (not (null? get-board-occupant board capture-L))
-                  (not (equal? (chesspiece-color (get-board-occupant board capture-L)) 'White))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-L)) 'White)))
               (list (make-chess-move from-square capture-L))
               null
-            ))
+            )
             (if (and
                   (square-in-bounds capture-R)
                   (not (null? get-board-occupant board capture-R))
-                  (not (equal? (chesspiece-color (get-board-occupant board capture-R)) 'White))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-R)) 'White)))
               (list (make-chess-move from-square capture-R))
               null
-            ))
+            )
           )
         )
       )
@@ -235,17 +235,17 @@
             (if (and
                   (square-in-bounds capture-L)
                   (not (null? get-board-occupant board capture-L))
-                  (not (equal? (chesspiece-color (get-board-occupant board capture-L)) 'Black))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-L)) 'Black)))
               (list (make-chess-move from-square capture-L))
               null
-            ))
+            )
             (if (and
                   (square-in-bounds capture-R)
                   (not (null? get-board-occupant board capture-R))
-                  (not (equal? (chesspiece-color (get-board-occupant board capture-R)) 'Black))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-R)) 'Black)))
               (list (make-chess-move from-square capture-R))
               null
-            ))
+            )
           )
         )
       )
