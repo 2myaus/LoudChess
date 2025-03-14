@@ -44,7 +44,7 @@
 ; A chess-square is a (make-chess-square number number)
 ; It represents a location on the chessboard
 
-(define-struct chess-square (row col))
+(define-struct chess-square (row col) #:transparent)
 
 
 ; A chess-move is a (make-chess-move chess-square chess-square chess-type)
@@ -340,8 +340,8 @@
     (define (get-squares-along at-square step-rows step-cols)
       (cond
         [(not (square-in-bounds at-square)) null] ; We are at the edge of the board
-        [(null? (get-board-occupant at-square)) (cons at-square (get-squares-along (offset-square at-square step-rows step-cols)))] ; The square is not occupied
-        [(equal? (chesspiece-color (get-board-occupant at-square)) to-play) null] ; The square is occupied by a piece of our color
+        [(null? (get-board-occupant board at-square)) (cons at-square (get-squares-along (offset-square at-square step-rows step-cols) step-rows step-cols))] ; The square is not occupied
+        [(equal? (chesspiece-color (get-board-occupant board at-square)) to-play) null] ; The square is occupied by a piece of our color
         [else (list at-square)] ; The square is occupied by a piece of the other color
       )
     )
@@ -366,8 +366,8 @@
     (define (get-squares-along at-square step-rows step-cols)
       (cond
         [(not (square-in-bounds at-square)) null] ; We are at the edge of the board
-        [(null? (get-board-occupant at-square)) (cons at-square (get-squares-along (offset-square at-square step-rows step-cols)))] ; The square is not occupied
-        [(equal? (chesspiece-color (get-board-occupant at-square)) to-play) null] ; The square is occupied by a piece of our color
+        [(null? (get-board-occupant board at-square)) (cons at-square (get-squares-along (offset-square at-square step-rows step-cols) step-rows step-cols))] ; The square is not occupied
+        [(equal? (chesspiece-color (get-board-occupant board at-square)) to-play) null] ; The square is occupied by a piece of our color
         [else (list at-square)] ; The square is occupied by a piece of the other color
       )
     )
