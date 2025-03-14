@@ -337,7 +337,7 @@
       [(not (equal? (chesspiece-color occupant) (chess-position-to-play position))) null]
 
       [(equal? (chesspiece-type occupant) 'Pawn) (get-pawn-moves-from-square position from-square)]
-      [(equal? (chesspiece-type occupant) 'Knight) null]
+      [(equal? (chesspiece-type occupant) 'Knight) (get-knight-moves-from-square position from-square)]
       [(equal? (chesspiece-type occupant) 'Bishop) null]
       [(equal? (chesspiece-type occupant) 'Rook) null]
       [(equal? (chesspiece-type occupant) 'Queen) null]
