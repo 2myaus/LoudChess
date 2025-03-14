@@ -1,5 +1,17 @@
 #lang racket
 
+(require rackunit)
+
+; List comparer for unit tests:
+(define (same-elements? list1 list2)
+  (equal? (list->set list1) (list->set list2)))
+
+(define-check (check-same-elements? list1 list2)
+  (if (same-elements? list1 list2)
+    void
+    (fail-check)))
+
+
 ; A chess-color is one of:
 ; 'White
 ; 'Black
@@ -151,11 +163,19 @@
 ; Returns the chess-moves which the pawn at the given square can move to
 ; Assumes that the piece is a pawn and the correct color to play
 
+; (check same-elements?
+;   (get-pawn-moves-from-square starting-position (make-chess-square 1 1))
+;   (list
+;     (make-chess-move (make-chess-square 1 1) (make-chess-square 2 1) null)
+;     (make-chess-move (make-chess-square 1 1) (make-chess-square 3 1) null)))
+
+
 (define (get-pawn-moves-from-square position from-square)
   (let [(from-row (chess-square-row from-square))
         (from-col (chess-square-col from-square))
         (board (chess-position-board position))
         (to-play (chess-position-to-play position))
+        (passant-square (chess-position-passant-square position))
         (occupant (get-board-occupant (chess-position-board position) from-square))]
     (if (equal? to-play 'White)
       ; White Pawn
@@ -188,7 +208,7 @@
           (append ; Captures
             (if (and
                   (square-in-bounds capture-L)
-                  (not (null? (get-board-occupant board capture-L)))
+                  (or (not (null? (get-board-occupant board capture-L))) (equal? capture-L passant-square))
                   (not (equal? (chesspiece-color (get-board-occupant board capture-L)) to-play)))
               (if (= (chess-square-row capture-L) 7) ; Promotion Capture
                 (list
@@ -202,7 +222,7 @@
             )
             (if (and
                   (square-in-bounds capture-R)
-                  (not (null? (get-board-occupant board capture-R)))
+                  (or (not (null? (get-board-occupant board capture-R))) (equal? capture-R passant-square))
                   (not (equal? (chesspiece-color (get-board-occupant board capture-R)) to-play)))
               (if (= (chess-square-row capture-R) 7) ; Promotion Capture
                 (list
@@ -248,7 +268,7 @@
           (append ; Captures
             (if (and
                   (square-in-bounds capture-L)
-                  (not (null? (get-board-occupant board capture-L)))
+                  (or (not (null? (get-board-occupant board capture-L))) (equal? capture-L passant-square))
                   (not (equal? (chesspiece-color (get-board-occupant board capture-L)) to-play)))
               (if (= (chess-square-row capture-L) 0) ; Promotion Capture
                 (list
@@ -262,7 +282,7 @@
             )
             (if (and
                   (square-in-bounds capture-R)
-                  (not (null? (get-board-occupant board capture-R)))
+                  (or (not (null? (get-board-occupant board capture-R))) (equal? capture-R passant-square))
                   (not (equal? (chesspiece-color (get-board-occupant board capture-R)) to-play)))
               (if (= (chess-square-row capture-R) 0) ; Promotion Capture
                 (list
