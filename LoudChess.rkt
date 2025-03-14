@@ -47,10 +47,12 @@
 (define-struct chess-square (row col))
 
 
-; A chess-move is a (make-chess-move chess-square chess-square)
-; It represents a move as origin square to destination square
+; A chess-move is a (make-chess-move chess-square chess-square chess-type)
+; It represents a move as origin square to destination square,
+; with promotion representing the chess-type that a pawn promotes to
+; upon reaching the last rank, otherwise it is null
 
-(define-struct chess-move (from to))
+(define-struct chess-move (from to promotion))
 
 
 ; A chess-square-occupier is one of:
@@ -145,24 +147,201 @@
   (list-ref (list-ref board (chess-square-row square)) (chess-square-col square)))
 
 
-; get-moves-from-square: chess-position chess-square -> (list chess-square)
-; Returns the chess-squares which the piece at the given square can move to
+; get-pawn-moves-from-square: chess-position chess-square -> (list chess-move)
+; Returns the chess-moves which the pawn at the given square can move to
+; Assumes that the piece is a pawn and the correct color to play
 
-(define (get-moves-from-square position from-square)
+(define (get-pawn-moves-from-square position from-square)
   (let [(from-row (chess-square-row from-square))
         (from-col (chess-square-col from-square))
         (board (chess-position-board position))
-        (occupant (get-board-occupant (chess-position-board position) from-square))](
+        (to-play (chess-position-to-play position))
+        (occupant (get-board-occupant (chess-position-board position) from-square))]
+    (if (equal? (chesspiece-color occupant) 'White)
+      ; White Pawn
+      (let [(capture-L (offset-square from-square 1 1))
+            (capture-R (offset-square from-square 1 -1)) 
+            (push-1 (offset-square from-square 1 0))
+            (push-2 (offset-square from-square 2 0)) ]
+        (append
+          (cond
+            [(= from-row 7) null] ; Somehow the pawn is on the last rank :/
+            [(not (null? (get-board-occupant board push-1))) null] ; The pawn is blocked
 
-      (cond
-        [(null? occupant) null]
-        [(not (equal? (chesspiece-color occupant) (chess-position-to-play position))) null]
-        [(equal? (chesspiece-type occupant) 'Pawn) null]
-        [(equal? (chesspiece-type occupant) 'Knight) null]
-        [(equal? (chesspiece-type occupant) 'Bishop) null]
-        [(equal? (chesspiece-type occupant) 'Rook) null]
-        [(equal? (chesspiece-type occupant) 'Queen) null]
-        [(equal? (chesspiece-type occupant) 'King) null]) )))
+            [(and (<= from-row 1) (null? (get-board-occupant board push-2))) ; First Rank - Allow double advance
+              (list
+                (make-chess-move from-square push-1 null)
+                (make-chess-move from-square push-2 null))]
+
+            [(= from-row 6) ; Last Rank - Give promotion options
+             (list
+                (make-chess-move from-square push-1 'Knight)
+                (make-chess-move from-square push-1 'Bishop)
+                (make-chess-move from-square push-1 'Rook)
+                (make-chess-move from-square push-1 'Queen))]
+
+            [else
+              (list
+                 (make-chess-move from-square push-1 null))]
+
+          )
+          (append ; Captures
+            (if (and
+                  (square-in-bounds capture-L)
+                  (not (null? get-board-occupant board capture-L))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-L)) 'White))
+              (list (make-chess-move from-square capture-L))
+              null
+            ))
+            (if (and
+                  (square-in-bounds capture-R)
+                  (not (null? get-board-occupant board capture-R))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-R)) 'White))
+              (list (make-chess-move from-square capture-R))
+              null
+            ))
+          )
+        )
+      )
+
+      ; Black Pawn
+      (let [(capture-L (offset-square from-square -1 1))
+            (capture-R (offset-square from-square -1 -1)) 
+            (push-1 (offset-square from-square -1 0))
+            (push-2 (offset-square from-square -2 0)) ]
+        (append
+          (cond
+            [(= from-row 0) null] ; Somehow the pawn is on the last rank :/
+            [(not (null? (get-board-occupant board push-1))) null] ; The pawn is blocked
+
+            [(and (<= from-row 6) (null? (get-board-occupant board push-2))) ; First Rank - Allow double advance
+              (list
+                (make-chess-move from-square push-1 null)
+                (make-chess-move from-square push-2 null))]
+
+            [(= from-row 1) ; Last Rank - Give promotion options
+             (list
+                (make-chess-move from-square push-1 'Knight)
+                (make-chess-move from-square push-1 'Bishop)
+                (make-chess-move from-square push-1 'Rook)
+                (make-chess-move from-square push-1 'Queen))]
+
+            [else
+              (list
+                 (make-chess-move from-square push-1 null))]
+
+          )
+          (append ; Captures
+            (if (and
+                  (square-in-bounds capture-L)
+                  (not (null? get-board-occupant board capture-L))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-L)) 'Black))
+              (list (make-chess-move from-square capture-L))
+              null
+            ))
+            (if (and
+                  (square-in-bounds capture-R)
+                  (not (null? get-board-occupant board capture-R))
+                  (not (equal? (chesspiece-color (get-board-occupant board capture-R)) 'Black))
+              (list (make-chess-move from-square capture-R))
+              null
+            ))
+          )
+        )
+      )
+    )
+  )
+)
+
+
+; get-knight-moves-from-square: chess-position chess-square -> (list chess-move)
+; Returns the chess-moves which the knight at the given square can move to
+; Assumes that the piece is a knight and the correct color to play
+
+(define (get-knight-moves-from-square position from-square)
+  (let [(from-row (chess-square-row from-square))
+        (from-col (chess-square-col from-square))
+        (board (chess-position-board position))
+        (occupant (get-board-occupant (chess-position-board position) from-square))
+        (to-play (chess-position-to-play position))
+
+        (UP-left (offset-square from-square 2 -1))
+        (UP-right (offset-square from-square 2 1))
+        (RIGHT-up (offset-square from-square 1 2))
+        (RIGHT-down (offset-square from-square -1 2))
+        (DOWN-right (offset-square from-square -2 1))
+        (DOWN-left (offset-square from-square -2 -1))
+        (LEFT-down (offset-square from-square -1 -2))
+        (LEFT-up (offset-square from-square 1 -2))]
+    (append
+      (if (and
+            (square-in-bounds UP-left)
+            (not (equal? (chesspiece-color (get-board-occupant board UP-left) to-play))))
+        (list UP-left)
+        null
+      )
+      (if (and
+            (square-in-bounds UP-right)
+            (not (equal? (chesspiece-color (get-board-occupant board UP-right) to-play))))
+        (list UP-right)
+        null
+      )
+      (if (and
+            (square-in-bounds RIGHT-up)
+            (not (equal? (chesspiece-color (get-board-occupant board RIGHT-up) to-play))))
+        (list RIGHT-up)
+        null
+      )
+      (if (and
+            (square-in-bounds RIGHT-down)
+            (not (equal? (chesspiece-color (get-board-occupant board RIGHT-down) to-play))))
+        (list RIGHT-down)
+        null
+      )
+      (if (and
+            (square-in-bounds DOWN-right)
+            (not (equal? (chesspiece-color (get-board-occupant board DOWN-right) to-play))))
+        (list DOWN-right)
+        null
+      )
+      (if (and
+            (square-in-bounds DOWN-left)
+            (not (equal? (chesspiece-color (get-board-occupant board DOWN-left) to-play))))
+        (list DOWN-left)
+        null
+      )
+      (if (and
+            (square-in-bounds LEFT-down)
+            (not (equal? (chesspiece-color (get-board-occupant board LEFT-down) to-play))))
+        (list LEFT-down)
+        null
+      )
+      (if (and
+            (square-in-bounds LEFT-up)
+            (not (equal? (chesspiece-color (get-board-occupant board LEFT-up) to-play))))
+        (list LEFT-up)
+        null
+      )
+    )
+  )
+)
+
+
+; get-moves-from-square: chess-position chess-square -> (list chess-move)
+; Returns the chess-moves which the piece at the given square can move to
+
+(define (get-moves-from-square position from-square)
+  (let [(occupant (get-board-occupant (chess-position-board position) from-square))] (
+    (cond
+      [(null? occupant) null]
+      [(not (equal? (chesspiece-color occupant) (chess-position-to-play position))) null]
+
+      [(equal? (chesspiece-type occupant) 'Pawn) (get-pawn-moves-from-square position from-square)]
+      [(equal? (chesspiece-type occupant) 'Knight) null]
+      [(equal? (chesspiece-type occupant) 'Bishop) null]
+      [(equal? (chesspiece-type occupant) 'Rook) null]
+      [(equal? (chesspiece-type occupant) 'Queen) null]
+      [(equal? (chesspiece-type occupant) 'King) null]) )))
 
 
 (define starting-board
