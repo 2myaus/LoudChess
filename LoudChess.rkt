@@ -383,10 +383,10 @@
 ; Returns the chess-moves which the queen at the given square can move to
 ; Assumes that the piece is a queen and the correct color to play
 
-(define (get-rook-moves-from-square position from-square)
+(define (get-queen-moves-from-square position from-square)
   (append
     (get-bishop-moves-from-square position from-square)
-    (get-rook-moves-from-square position from-square))
+    (get-rook-moves-from-square position from-square)))
 
 
 ; get-moves-from-square: chess-position chess-square -> (list chess-move)
